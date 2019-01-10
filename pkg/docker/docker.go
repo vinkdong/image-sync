@@ -64,15 +64,13 @@ func (docker *Docker) pullImage(name, tag string) error {
 	return nil
 }
 
-func (docker *Docker) tagImage(registry, name, tag string) error {
+func (docker *Docker) tagImage(source, target string) error {
 	ctx := context.Background()
 	c, err := client.NewEnvClient()
 	if err != nil {
 		return err
 	}
-	sourceStr := fmt.Sprintf("%s/%s:%s", docker.Registry, name, tag)
-	targetStr := fmt.Sprintf("%s/%s:%s", registry, name, tag)
-	return c.ImageTag(ctx, sourceStr, targetStr)
+	return c.ImageTag(ctx, source, target)
 }
 
 func (docker *Docker) pushImage(name, tag string) error {
