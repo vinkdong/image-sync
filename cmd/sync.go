@@ -21,6 +21,8 @@ import (
 	"github.com/vinkdong/gox/log"
 	"github.com/vinkdong/image-sync/pkg/docker"
 	"gopkg.in/yaml.v2"
+	"fmt"
+	"time"
 )
 
 // syncCmd represents the sync command
@@ -34,20 +36,53 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if config, err := cmd.Flags().GetString("config"); err != nil && config != "" {
-			data, err := ioutil.ReadFile(config)
-			if err != nil {
-				log.Error(err)
-				os.Exit(128)
-			}
-			sync:= &docker.Sync{}
-			yaml.Unmarshal(data,sync)
-			sync.Do()
+		var (
+			config string
+			err    error
+		)
+
+		if config, err = cmd.Flags().GetString("config"); err != nil {
+			log.Error(err)
+			os.Exit(128)
 		}
+		if config == "" {
+			log.Error("must specify a config file")
+		}
+
+		data, err := ioutil.ReadFile(config)
+		if err != nil {
+			log.Error(err)
+			os.Exit(128)
+		}
+		sync := &docker.NamedSync{}
+		yaml.Unmarshal(data, sync)
+		if err := sync.Sync.Do(); err != nil {
+			log.Error(err)
+			os.Exit(128)
+		}
+
+		daemon, err := cmd.Flags().GetBool("daemon")
+		if err != nil {
+			log.Error(err)
+			os.Exit(128)
+		}
+		if daemon {
+			for {
+				select {
+				case <-time.Tick(time.Minute * 3):
+					if err := sync.Sync.Do(); err != nil {
+						log.Error(err)
+						os.Exit(128)
+					}
+				}
+			}
+		}
+		fmt.Println("sync succeed")
 	},
 }
 
 func init() {
 	syncCmd.Flags().StringP("config", "c", "", "specify a config file")
+	syncCmd.Flags().BoolP("daemon", "d", false, "run as daemon")
 	rootCmd.AddCommand(syncCmd)
 }

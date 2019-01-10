@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"fmt"
+	"github.com/vinkdong/gox/log"
 )
 
 type NamedSync struct {
@@ -43,7 +44,7 @@ func (s *Sync) Do() error {
 
 func (s *Sync) replaceName(name string) string {
 	for _, r := range s.Replace {
-		name = strings.Replace(name, r.Old, r.New, 0)
+		name = strings.Replace(name, r.Old, r.New, 1)
 	}
 	return name
 }
@@ -81,16 +82,16 @@ func (s *Sync) matchRules(tagName string) bool {
 }
 
 func (s *Sync) sync(name, tName, tag string) error {
+	log.Infof("sync %s:%s to %s:%s", name, tag, tName, tag)
 	if err := s.From.pullImage(name, tag); err != nil {
 		return err
 	}
-
 	source := fmt.Sprintf("%s/%s:%s", s.From.Registry, name, tag)
 	target := fmt.Sprintf("%s/%s:%s", s.To.Registry, tName, tag)
 	if err := s.From.tagImage(source, target); err != nil {
 		return err
 	}
-	if err := s.From.pushImage(name, tag); err != nil {
+	if err := s.To.pushImage(tName, tag); err != nil {
 		return err
 	}
 	return nil
