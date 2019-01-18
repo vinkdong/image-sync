@@ -15,12 +15,14 @@ import (
 	"github.com/vinkdong/gox/log"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/cli/command"
+	"io"
 )
 
 const ApiVersion = "v2"
 
 type Docker struct {
 	Registry     string
+	ApiUrl       string `yaml:"apiUrl"`
 	Username     string
 	Password     string
 	RegistryAuth string
@@ -89,6 +91,7 @@ func (docker *Docker) pushImage(name, tag string) error {
 	if err != nil {
 		return err
 	}
+	io.Copy(os.Stdout, reader)
 	outStream := command.NewOutStream(os.Stdout)
 	jsonmessage.DisplayJSONMessagesToStream(reader, outStream, nil)
 	return nil
@@ -100,7 +103,11 @@ type Image struct {
 }
 
 func (docker *Docker) listTags(name string) (*Image, error) {
-	uri := fmt.Sprintf("https://%s/%s/%s/%s", docker.Registry, ApiVersion, name, "tags/list")
+	apiUrl := docker.ApiUrl
+	if apiUrl == "" {
+		apiUrl = docker.Registry
+	}
+	uri := fmt.Sprintf("https://%s/%s/%s/%s", apiUrl, ApiVersion, name, "tags/list")
 	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, err
