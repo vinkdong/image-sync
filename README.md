@@ -11,7 +11,8 @@ sync:
     username: admin
     password: xxxx
   to: 
-    registry: registry.b.com
+    registry: docker.io
+    apiUrl:  registry-1.docker.io # if api url is different registry should define it.
     username: root
     password: yyyy
   names:

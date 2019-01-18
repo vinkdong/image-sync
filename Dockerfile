@@ -10,11 +10,11 @@ RUN \
 
 FROM alpine
 
-COPY --from=builder /go/src/github.com/vinkdong/image-sync/image-sync /image-sync
-
 RUN \
 set -ex \
    mkdir -p /etc/image-sync  && \
    apk add --no-cache ca-certificates
+
+COPY --from=builder /go/src/github.com/vinkdong/image-sync/image-sync /image-sync
 
 CMD ["/image-sync","sync","-c","/etc/image-sync/config.yml","-d"]

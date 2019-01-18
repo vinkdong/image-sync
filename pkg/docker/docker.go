@@ -15,7 +15,6 @@ import (
 	"github.com/vinkdong/gox/log"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/cli/command"
-	"io"
 )
 
 const ApiVersion = "v2"
@@ -91,7 +90,6 @@ func (docker *Docker) pushImage(name, tag string) error {
 	if err != nil {
 		return err
 	}
-	io.Copy(os.Stdout, reader)
 	outStream := command.NewOutStream(os.Stdout)
 	jsonmessage.DisplayJSONMessagesToStream(reader, outStream, nil)
 	return nil
