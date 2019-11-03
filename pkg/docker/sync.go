@@ -64,7 +64,8 @@ func (s *Sync) syncTags(name string) error {
 	for _, tag := range diffTags {
 		if s.matchRules(tag) {
 			if err := s.sync(name, tName, tag); err != nil {
-				return err
+				//return err
+				log.Error(err)
 			}
 		}
 	}

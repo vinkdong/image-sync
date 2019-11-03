@@ -54,8 +54,13 @@ func (docker *Docker) pullImage(name, tag string) error {
 	if tag == "" {
 		tag = "latest"
 	}
+
+	pullOpts := types.ImagePullOptions{
+		RegistryAuth: docker.RegistryAuth,
+	}
+
 	refStr := fmt.Sprintf("%s/%s:%s", docker.Registry, name, tag)
-	reader, err := c.ImagePull(ctx, refStr, types.ImagePullOptions{})
+	reader, err := c.ImagePull(ctx, refStr, pullOpts)
 	if err != nil {
 		return err
 	}
